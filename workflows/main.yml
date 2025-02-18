@@ -94,3 +94,19 @@ jobs:
           sleep 10
           curl -f http://localhost:9090 || exit 1  # Prometheus
           curl -f http://localhost:3000 || exit 1  # Grafana
+
+  containerize:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Build Docker Image
+        run: |
+          docker build -t express-app:latest .
+
+      - name: Run Container Locally
+        run: |
+          docker run -d -p 3000:3000 express-app:latest
+
