@@ -76,3 +76,21 @@ jobs:
         run: |
           echo "Implementing Blue-Green Deployment..."
           # Placeholder for blue-green deployment strategy
+
+  monitoring:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Prometheus
+        run: |
+          docker-compose -f monitoring/prometheus.yml up -d
+
+      - name: Set up Grafana
+        run: |
+          docker-compose -f monitoring/grafana.yml up -d
+
+      - name: Verify Prometheus and Grafana
+        run: |
+          sleep 10
+          curl -f http://localhost:9090 || exit 1  # Prometheus
+          curl -f http://localhost:3000 || exit 1  # Grafana
