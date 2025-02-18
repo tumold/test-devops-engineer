@@ -1,0 +1,84 @@
+How to Use the GitHub Actions CI/CD Pipeline (main.yml)
+
+Prerequisites
+
+A GitHub repository with your Node.js application.
+
+GitHub Actions enabled in your repository.
+
+A GitHub Container Registry (GHCR) token (if using Docker image pushes).
+
+Setting Up GitHub Actions
+
+1. Add the Workflow File
+
+Ensure your repository has a .github/workflows/main.yml file. If not, create it and copy the CI/CD pipeline configuration.
+
+2. Configure Secrets (If Required)
+
+If your workflow pushes Docker images to GHCR, add a GitHub secret:
+
+Navigate to Settings → Secrets and variables → Actions.
+
+Add a new secret named GHCR_TOKEN with your GitHub Personal Access Token.
+
+3. Triggering the Workflow
+
+The workflow triggers automatically on:
+
+Pushes to the main branch.
+
+Pull requests targeting the main branch.
+
+You can also manually trigger the workflow by navigating to:
+
+GitHub Repository → Actions.
+
+Select the CI/CD Pipeline workflow.
+
+Click Run workflow and select the desired branch.
+
+4. Monitoring Workflow Execution
+
+Navigate to the Actions tab in your GitHub repository.
+
+Select the latest workflow run to view logs and job statuses.
+
+If a step fails, check the logs for error details.
+
+5. Deployment and Rollback
+
+On success, the workflow builds, tests, and deploys the application.
+
+If a failure occurs after deployment, the workflow automatically rolls back the previous version.
+
+6. Modifying the Workflow
+
+If you need to customize the pipeline:
+
+Edit .github/workflows/main.yml and commit your changes.
+
+Ensure your modifications follow YAML syntax and GitHub Actions best practices.
+
+7. Stopping or Disabling the Workflow
+
+To disable GitHub Actions:
+
+Go to Settings → Actions.
+
+Choose Disable Actions for this repository.
+
+To temporarily stop a workflow run:
+
+Navigate to Actions → Select a running job → Cancel Workflow.
+
+8. Troubleshooting
+
+Ensure all dependencies are correctly installed.
+
+Check permissions if accessing private repositories or registries.
+
+Verify Docker services are correctly set up in the workflow steps.
+
+This guide ensures seamless usage of your CI/CD pipeline. Let me know if you need additional details! 🚀
+
