@@ -1,0 +1,111 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run linting
+        run: npm run lint
+
+      - name: Run tests
+        run: npm test
+
+  docker:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+
+      - name: Build and tag Docker image
+        run: |
+          docker build -t ghcr.io/${{ github.repository }}/express-app:latest .
+
+      - name: Push Docker image to GitHub Container Registry
+        run: |
+          docker push ghcr.io/${{ github.repository }}/express-app:latest
+
+  deploy:
+    needs: docker
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Deploy with Docker Compose
+        run: |
+          docker-compose -f docker-compose.yml up -d
+
+      - name: Check if application is running
+        run: |
+          sleep 10  # Wait for the container to start
+          curl -f http://localhost:3000 || exit 1
+
+      - name: Rollback on failure
+        if: failure()
+        run: |
+          docker-compose -f docker-compose.yml down
+
+  blue-green:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy Blue-Green Strategy
+        run: |
+          echo "Implementing Blue-Green Deployment..."
+          # Placeholder for blue-green deployment strategy
+
+  monitoring:
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Set up Prometheus
+        run: |
+          docker-compose -f monitoring/prometheus.yml up -d
+
+      - name: Set up Grafana
+        run: |
+          docker-compose -f monitoring/grafana.yml up -d
+
+      - name: Verify Prometheus and Grafana
+        run: |
+          sleep 10
+          curl -f http://localhost:9090 || exit 1  # Prometheus
+          curl -f http://localhost:3000 || exit 1  # Grafana
+
+  containerize:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Build Docker Image
+        run: |
+          docker build -t express-app:latest .
+
+      - name: Run Container Locally
+        run: |
+          docker run -d -p 3000:3000 express-app:latest
